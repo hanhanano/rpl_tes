@@ -132,7 +132,6 @@ class PublicationExport implements FromCollection, WithHeadings, WithStyles, Wit
         $lastColumn = $sheet->getHighestColumn();
         $lastRow = max(1, $sheet->getHighestRow());
 
-        // Tambah border untuk semua cell
         $sheet->getStyle("A1:{$lastColumn}{$lastRow}")
             ->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
@@ -141,7 +140,6 @@ class PublicationExport implements FromCollection, WithHeadings, WithStyles, Wit
             $sheet->getColumnDimension($lastColumn)->setAutoSize(true);
         }
 
-        // Bold untuk header
         $sheet->getStyle('A1:O1')->getFont()->setBold(true);
 
         return [];
@@ -150,7 +148,7 @@ class PublicationExport implements FromCollection, WithHeadings, WithStyles, Wit
     public function columnFormats(): array
     {
         return [
-            // Supaya tidak auto-convert tanggal ke format default Excel
+            // Auto-convert tanggal ke format default Excel
             'E' => NumberFormat::FORMAT_TEXT,
             'F' => NumberFormat::FORMAT_TEXT,
             'G' => NumberFormat::FORMAT_TEXT,

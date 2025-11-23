@@ -27,9 +27,8 @@ class Publication extends Model
         'slug_publication',
         'is_monthly',
     ];
-
     
-    // Generate UUID otomatis saat creating (jika belum ada)
+    // Generate UUID otomatis saat creating 
     protected static function boot()
     {
         parent::boot();
@@ -47,23 +46,13 @@ class Publication extends Model
         return 'slug_publication';
     }
 
-    // Relasi: Publication dimiliki oleh satu User
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class, 'user_id', 'user_id');
-    // }
-
+    // Publication dimiliki oleh satu User
     public function user()
     {
         return $this->belongsTo(User::class, 'fk_user_id', 'id');
     }
 
-    // Relasi: Publication memiliki banyak Steps Plans
-    // public function stepsPlans()
-    // {
-    //     return $this->hasMany(StepsPlan::class, 'publication_id', 'publication_id');
-    // }
-
+    // Publication memiliki banyak Steps Plans
     public function stepsPlans()
     {
         return $this->hasMany(StepsPlan::class, 'publication_id', 'publication_id');
@@ -73,6 +62,6 @@ class Publication extends Model
     public function files()
     {
         return $this->hasMany(PublicationFile::class, 'publication_id', 'publication_id')
-                    ->orderBy('created_at', 'desc'); // File terbaru di atas
+                    ->orderBy('created_at', 'desc'); 
     }
 }

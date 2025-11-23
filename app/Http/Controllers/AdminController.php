@@ -14,13 +14,14 @@ class AdminController extends Controller
              return view('tampilan.adminpage', compact('users'));
         }
 
-     // Tambah user baru
+     // Tambah user
     public function store(Request $request)
     {
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|unique:users,email',
             'role'     => 'required|string',
+            'team'     => 'nullable|string',
             'password' => 'required|string|min:6',
         ]);
 
@@ -28,6 +29,7 @@ class AdminController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'role'     => $request->role,
+            'team'     => $request->team,
             'password' => Hash::make($request->password),
         ]);
 
@@ -39,7 +41,6 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Jangan sampai admin hapus dirinya sendiri
         if (auth()->id() === $user->id) {
             return redirect()->route('adminpage')->with('error', 'Tidak bisa menghapus akun Anda sendiri.');
         }
@@ -53,11 +54,12 @@ class AdminController extends Controller
 {
     $query = $request->input('query');
 
-    $users = User::select('id','name','email','role')
+    $users = User::select('id','name','email','role', 'team')
         ->when($query, function ($q) use ($query) {
             $q->where('name', 'like', "%{$query}%")
               ->orWhere('email', 'like', "%{$query}%")
-              ->orWhere('role', 'like', "%{$query}%");
+              ->orWhere('role', 'like', "%{$query}%")
+              ->orWhere('team', 'like', "%{$query}%");
         })
         ->get();
 

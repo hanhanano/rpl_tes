@@ -20,23 +20,18 @@ use ZipArchive;
 
 class PublicationExportController extends Controller
 {
-    // Export per publication
     public function export($slug_publication)
     {
-        // 1. Ambil data publikasi
         $publication = Publication::with(['stepsplans.stepsFinals.struggles'])->where('slug_publication', $slug_publication)->firstOrFail();
 
-        // 2. Export Excel
         $excelFileName = sprintf(
             "%s_%s.xlsx",
             str_replace(' ', '_', $publication->publication_name),
             str_replace(' ', '_', $publication->publication_report)
         );
         $excelPath = "exports/{$excelFileName}";
-        // File Excel disimpan di storage/app/exports
         Excel::store(new PublicationExport($slug_publication), $excelPath);
 
-        // 3. Buat file ZIP
         $zipFileName = sprintf(
             "%s_%s.zip",
             str_replace(' ', '_', $publication->publication_name),
@@ -45,26 +40,19 @@ class PublicationExportController extends Controller
         $zipPath = "exports/{$zipFileName}";
         $zip = new ZipArchive;
 
-        // Pastikan direktori 'exports' ada
         if (!Storage::exists('exports')) {
             Storage::makeDirectory('exports');
         }
 
-        // Buka file zip untuk ditambahkan isinya
         if ($zip->open(Storage::path($zipPath), ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             
-            // Tambahkan file Excel ke dalam zip
-            // Menggunakan Storage::path() untuk mendapatkan path absolut yang benar
             $excelFullPath = Storage::path($excelPath);
             if (file_exists($excelFullPath)) {
                 $zip->addFile($excelFullPath, $excelFileName);
             }
 
-            // Tambahkan dokumen-dokumen terkait ke dalam zip
             foreach ($publication->stepsplans as $plan) {
-                // Dokumen Plan (dari storage/app/public)
                 if ($plan->plan_doc && Storage::disk('public')->exists($plan->plan_doc)) {
-                    // Buat nama file: gabungan plan_type + plan_name + ekstensi asli
                     $filename = Str::slug($plan->plan_type . '_' . $plan->plan_name, '_') 
                         . '.' . pathinfo($plan->plan_doc, PATHINFO_EXTENSION);
                     
@@ -73,18 +61,14 @@ class PublicationExportController extends Controller
                 
                 if ($plan->stepsFinals) {
                     $final = $plan->stepsFinals;
-                    // Dokumen Final (dari storage/app/public)
                     if ($final->final_doc && Storage::disk('public')->exists($final->final_doc)) {
-                        // Buat nama file: gabungan plan_type + plan_name + ekstensi asli
                         $filename = Str::slug($plan->plan_type . '_' . $plan->plan_name, '_') 
                             . '.' . pathinfo($plan->plan_doc, PATHINFO_EXTENSION);
                         
                         $zip->addFile(Storage::disk('public')->path($final->final_doc), "bukti_dukung_realisasi/" . $filename);
                     }
-                    // Dokumen Struggles (dari storage/app/public)
                     foreach ($final->struggles as $struggle) {
                         if ($struggle->solution_doc && Storage::disk('public')->exists($struggle->solution_doc)) {
-                            // Buat nama file: gabungan plan_type + plan_name + ekstensi asli
                             $filename = Str::slug($plan->plan_type . '_' . $plan->plan_name, '_') 
                                 . '.' . pathinfo($plan->plan_doc, PATHINFO_EXTENSION);
                             
@@ -96,7 +80,6 @@ class PublicationExportController extends Controller
             $zip->close();
         }
 
-        // 4. Unduh file ZIP
         if (Storage::exists($zipPath)) {
             return Storage::download($zipPath);
         } else {
@@ -104,18 +87,13 @@ class PublicationExportController extends Controller
         }
     }
 
-    // Export all publication
     public function exportTable()
     {
-        
         $publications = Publication::with([
             'user',
             'stepsPlans.stepsFinals.struggles'
         ])->get();
 
-        // ============================
-        // Olah data publikasi
-        // ============================
         foreach ($publications as $publication) {
             $rekapPlans   = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
             $rekapFinals  = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
@@ -126,11 +104,11 @@ class PublicationExportController extends Controller
             foreach ($publication->stepsPlans as $plan) {
                 $totalPlans++;
 
-                // hitung rencana
+                // Hitung rencana
                 $q = $this->getQuarter($plan->plan_start_date);
                 if ($q) $rekapPlans[$q]++;
 
-                // hitung realisasi
+                // Hitung realisasi
                 if ($plan->stepsFinals) {
                     $totalFinals++;
                     $fq = $this->getQuarter($plan->stepsFinals->actual_started);
@@ -142,12 +120,10 @@ class PublicationExportController extends Controller
                 }
             }
 
-            // progress kumulatif
             $progressKumulatif = $totalPlans > 0
                 ? round(($totalFinals / $totalPlans) * 100, 2)
                 : 0;
 
-            // progress per triwulan
             $progressTriwulan = [];
             foreach ([1, 2, 3, 4] as $q) {
                 if ($rekapPlans[$q] > 0) {
@@ -157,7 +133,6 @@ class PublicationExportController extends Controller
                 }
             }
 
-            // simpan ke publikasi
             $publication->rekapPlans = $rekapPlans;
             $publication->rekapFinals = $rekapFinals;
             $publication->lintasTriwulan = $lintasTriwulan;
@@ -167,9 +142,6 @@ class PublicationExportController extends Controller
             $publication->totalFinals = $totalFinals;
         }
 
-        // ============================
-        // Buat spreadsheet
-        // ============================
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -181,7 +153,6 @@ class PublicationExportController extends Controller
         $sheet->mergeCells('E1:E2')->setCellValue('E1', 'Tahapan');
         $sheet->mergeCells('F1:F2')->setCellValue('F1', 'Progress Kumulatif (%)');
         $sheet->mergeCells('G1:G2')->setCellValue('G1', 'Lintas Triwulan');
-
         $sheet->mergeCells('H1:K1')->setCellValue('H1', 'Rencana Kegiatan');
         $sheet->mergeCells('L1:O1')->setCellValue('L1', 'Realisasi Kegiatan');
 
@@ -195,9 +166,7 @@ class PublicationExportController extends Controller
         $sheet->setCellValue('N2', 'Triwulan III');
         $sheet->setCellValue('O2', 'Triwulan IV');
 
-        // ============================
         // Isi data
-        // ============================
         $row = 3;
         foreach ($publications as $index => $publication) {
             $sheet->setCellValue("A{$row}", $index + 1);
@@ -216,22 +185,20 @@ class PublicationExportController extends Controller
 
             // Rencana per Triwulan
             foreach ([1, 2, 3, 4] as $i => $q) {
-                $col = chr(72 + $i); // H,I,J,K
+                $col = chr(72 + $i); 
                 $sheet->setCellValue("{$col}{$row}", $publication->rekapPlans[$q]);
             }
 
             // Realisasi per Triwulan
             foreach ([1, 2, 3, 4] as $i => $q) {
-                $col = chr(76 + $i); // L,M,N,O
+                $col = chr(76 + $i); 
                 $sheet->setCellValue("{$col}{$row}", $publication->rekapFinals[$q]);
             }
 
             $row++;
         }
 
-        // ============================
         // Styling
-        // ============================
         $sheet->getStyle('A1:O2')->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
             ->setVertical(Alignment::VERTICAL_CENTER);

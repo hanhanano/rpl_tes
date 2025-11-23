@@ -14,10 +14,7 @@
 </head>
 <body>
     <div>
-        {{-- Navbar --}}
         <x-navbar ></x-navbar>
-        {{-- Header --}}
-        <x-header></x-header>
     </div>
 
     <main>

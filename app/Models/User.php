@@ -21,7 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
+        'team',
     ];
 
     /**
@@ -48,10 +49,42 @@ class User extends Authenticatable
     }
 
     public function hasRole($roles)
-{
-    if (is_array($roles)) {
-        return in_array($this->role, $roles);
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        return $this->role === $roles;
     }
-    return $this->role === $roles;
-}
+
+    // Helper untuk cek apakah user punya akses ke tim tertentu
+    public function hasTeamAccess($teamName)
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        if (in_array($this->role, ['ketua_tim', 'operator'])) {
+            return $this->team === $teamName;
+        }
+
+        if ($this->role === 'viewer') {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Cek apakah user bisa edit publikasi tertentu
+    public function canManagePublication($publication)
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        if (in_array($this->role, ['ketua_tim', 'operator'])) {
+            return $this->team === $publication->publication_pic;
+        }
+
+        return false;
+    }
 }

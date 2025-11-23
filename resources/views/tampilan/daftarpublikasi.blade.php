@@ -8,17 +8,7 @@
 
         <div class="flex flex-wrap gap-2 justify-start sm:justify-end" x-data="{ open: false }">
             @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin']))
-                <!-- Tombol Unduh Excel -->
-                <a href="{{ route('publications.exportTable') }}"
-                    class="flex items-center justify-center gap-1 border text-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm shadow hover:text-white hover:bg-emerald-800 whitespace-nowrap min-w-[100px]">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-                            <path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z" />
-                            <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z" />
-                        </svg>
-                        Unduh Excel
-                </a>
-
-                <!-- Tombol Tambah Publikasi -->
+                
                 <button 
                     @click="open = true" 
                     class="flex items-center justify-center gap-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm shadow hover:bg-emerald-800 whitespace-nowrap min-w-[110px]">
@@ -28,13 +18,22 @@
                     Publikasi
                 </button>
             @endif
-            <!-- Modal -->
+            
+            <a href="{{ route('publications.exportTable') }}"
+                class="flex items-center justify-center gap-1 border text-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm shadow hover:text-white hover:bg-emerald-800 whitespace-nowrap min-w-[100px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                        <path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z" />
+                        <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z" />
+                    </svg>
+                    Unduh Excel
+            </a>
+            
             <div 
                 x-show="open" 
                 x-transition 
                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-                    <!-- Tombol close -->
+                    
                     <button 
                         @click="open = false" 
                         class="absolute top-2 right-2 text-gray-600 hover:text-red-600">
@@ -43,10 +42,29 @@
                     
                     <h2 class="text-lg font-semibold">Formulir Tambah Publikasi/Laporan</h2>
                     <p class="text-xs text-gray-500 mb-4">Catatan: Nama Laporan dapat memiliki banyak Nama Kegiatan</p>
+                    
+                    {{-- Tampilkan error validation --}}
+                    @if ($errors->any())
+                        <div class="mb-4 p-3 rounded bg-red-100 border border-red-300">
+                            <p class="text-sm font-semibold text-red-700 mb-1">Terjadi kesalahan:</p>
+                            <ul class="list-disc ml-4 text-xs text-red-600">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- Tampilkan error session --}}
+                    @if (session('error'))
+                        <div class="mb-4 p-3 rounded bg-red-100 border border-red-300">
+                            <p class="text-sm text-red-700">{{ session('error') }}</p>
+                        </div>
+                    @endif
+                    
                     <!-- Form -->
                     <form method="POST" action="{{ route('publications.store') }}"> 
                         @csrf
-                        <!-- Nama Laporan -->
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700">Nama Laporan/Publikasi</label>
                             <select id="publication_report" name="publication_report" 
@@ -68,52 +86,68 @@
                                 <option value="Indeks Pelayanan Publik - Penilaian Mandiri">Indeks Pelayanan Publik - Penilaian Mandiri</option>
                                 <option value="Nilai SAKIP oleh Inspektorat">Nilai SAKIP oleh Inspektorat</option>
                                 <option value="Indeks Implementasi BerAKHLAK">Indeks Implementasi BerAKHLAK</option>
-                                <option value="other"> -- Tambahkan Lainnya -- </option>
+                                <option value="other" {{ old('publication_report') == 'other' ? 'selected' : '' }}>
+                                    -- Tambahkan Lainnya --
+                                </option>
                             </select>
                         </div>
 
-                         <!-- Input tambahan untuk "other" -->
-                        <div class="mb-3" id="other_input" style="display: none;">
+                        <div class="mb-3" id="other_input" style="display: {{ old('publication_report') == 'other' ? 'block' : 'none' }};">
                             <label class="block text-sm font-medium text-gray-700">Nama Laporan Lainnya</label>
                             <input type="text" name="publication_report_other" 
+                                value="{{ old('publication_report_other') }}"
                                 class="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 placeholder="Tulis nama laporan lain di sini...">
                         </div>
 
-                        <!-- Nama kegiatan -->
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700">Nama Kegiatan</label>
                             <input type="text" name="publication_name" 
-                            class="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            placeholder="Contoh: Sakernas">
+                                value="{{ old('publication_name') }}"
+                                required
+                                class="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                placeholder="Contoh: Sakernas">
                         </div>
-                        <!-- PIC -->
+
                         <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-700">PIC</label>
+                            <label class="block text-sm font-medium text-gray-700">PIC</label>
                             <select name="publication_pic" 
+                                required
                                 class="px-2 py-2 w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                                 <option value="">-- Pilih PIC --</option>
-                                <option value="Umum">Tim Umum</option>
-                                <option value="Produksi">Tim Produksi</option>
-                                <option value="Distribusi">Tim Distribusi</option>
-                                <option value="Neraca">Tim Neraca</option>
-                                <option value="Sosial">Tim Sosial</option>
-                                <option value="IPDS">Tim IPDS</option>
+                                
+                                @php
+                                    $user = auth()->user();
+                                    $teams = ['Umum', 'Produksi', 'Distribusi', 'Neraca', 'Sosial', 'IPDS'];
+                                @endphp
+
+                                @foreach($teams as $team)
+                                    {{-- Ketua tim & operator hanya bisa pilih tim sendiri --}}
+                                    @if($user && in_array($user->role, ['ketua_tim', 'operator']))
+                                        @if($user->team === $team)
+                                            <option value="{{ $team }}" selected>Tim {{ $team }}</option>
+                                        @endif
+                                    @else
+                                        {{-- Admin bisa pilih semua --}}
+                                        <option value="{{ $team }}" {{ old('publication_pic') == $team ? 'selected' : '' }}>
+                                            Tim {{ $team }}
+                                        </option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
 
-                        <!-- Pilihan Bulan -->
                         <div x-data="{ 
-                            isMonthly: false, 
+                            isMonthly: {{ old('is_monthly') ? 'true' : 'false' }}, 
                             selectAll: true 
                         }">
                             
-                            <!-- Checkbox untuk aktifkan mode bulanan -->
                             <div class="mb-4">
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" 
                                         name="is_monthly" 
                                         value="1"
+                                        {{ old('is_monthly') ? 'checked' : '' }}
                                         x-model="isMonthly"
                                         class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
                                     <span class="text-sm font-medium text-gray-700">
@@ -125,7 +159,6 @@
                                 </p>
                             </div>
 
-                            <!-- Pilihan Bulan (muncul jika isMonthly = true) -->
                             <div x-show="isMonthly" 
                                 x-transition
                                 class="mb-3 border rounded-lg p-3 bg-gray-50">
@@ -143,95 +176,22 @@
                                 </div>
                                 
                                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                    <!-- Januari -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="1" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Januari</span>
-                                    </label>
-                                    
-                                    <!-- Februari -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="2" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Februari</span>
-                                    </label>
-                                    
-                                    <!-- Maret -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="3" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Maret</span>
-                                    </label>
-                                    
-                                    <!-- April -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="4" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">April</span>
-                                    </label>
-                                    
-                                    <!-- Mei -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="5" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Mei</span>
-                                    </label>
-                                    
-                                    <!-- Juni -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="6" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Juni</span>
-                                    </label>
-                                    
-                                    <!-- Juli -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="7" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Juli</span>
-                                    </label>
-                                    
-                                    <!-- Agustus -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="8" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Agustus</span>
-                                    </label>
-                                    
-                                    <!-- September -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="9" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">September</span>
-                                    </label>
-                                    
-                                    <!-- Oktober -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="10" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Oktober</span>
-                                    </label>
-                                    
-                                    <!-- November -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="11" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">November</span>
-                                    </label>
-                                    
-                                    <!-- Desember -->
-                                    <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
-                                        <input type="checkbox" name="months[]" value="12" checked 
-                                            class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                                        <span class="text-sm">Desember</span>
-                                    </label>
+                                    @for($i = 1; $i <= 12; $i++)
+                                        @php
+                                            $monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                                                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                        @endphp
+                                        <label class="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition">
+                                            <input type="checkbox" name="months[]" value="{{ $i }}" 
+                                                {{ (is_array(old('months')) && in_array($i, old('months'))) || !old('months') ? 'checked' : '' }}
+                                                class="mr-2 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+                                            <span class="text-sm">{{ $monthNames[$i-1] }}</span>
+                                        </label>
+                                    @endfor
                                 </div>
                             </div>
-
                         </div>
 
-                         <!-- Tombol Simpan -->
                         <div class="flex justify-end mt-4 gap-2">
                             <button type="button" @click="open = false" 
                                 class="text-xs sm:text-sm bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
@@ -262,7 +222,6 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm border-collapse">
                 <thead class="bg-gray-100 text-gray-800 text-xs border-y">
-                    <!-- Header Kolom -->
                     <tr class="border-y">
                         <th class="px-3 py-2">No</th>
                         <th class="px-3 py-2">Nama Publikasi/Laporan</th>
@@ -274,7 +233,7 @@
                         <th class="px-3 py-2" colspan="4">Realisasi Kegiatan</th>
                         <th class="px-3 py-2">Aksi</th>
                     </tr>
-                    <!-- Sub Header Kolom -->
+
                     <tr class="bg-gray-100 text-xs whitespace-nowrap">
                         <th class="px-3 py-2"></th>
                         <th class="px-3 py-2"></th>
@@ -294,36 +253,27 @@
                     </tr>
                 </thead>
                 <tbody id="publication-table-body">
-                    <!-- Isi Tabel -->
                     @if($publications->count())
                         @foreach($publications as $index => $publication)
                         <tr>
-                            <!-- No -->
                             <td class="px-4 py-4 align-top">{{ $index + 1 }}</td>
-                            <!-- Nama Publikasi -->
                             <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $publication->publication_report }}</td>
-                            <!-- Nama Kegiatan -->
                             <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $publication->publication_name }}</td>
-                            <!-- PIC -->
                             <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $publication->publication_pic }}</td>
-                            <!-- Tahapan -->
                             <td class="px-4 py-4 align-top">
                                 <div class="text-sm font-medium text-gray-700"> {{ array_sum($publication->rekapFinals) }}/{{ array_sum($publication->rekapPlans) }} Tahapan</div>
                                 <div class="flex items-center gap-2 mt-1">
                                 <span class="px-2 py-0.5 text-xs bg-gray-100 border rounded-full">{{ $publication->progressKumulatif }}% selesai</span>
                                 </div>
-                                <!-- <p class="text-xs text-gray-500 mt-1">Penyusunan Kuesioner, Wawancara Rumah Tangga, +2 lainnya</p> -->
                             </td>
-                            <!-- KOLOM PUBLIKASI -->
+
                             <td class="px-4 py-4 align-top text-center">
                                 @if($publication->files->count() > 0)
                                     <div class="relative group inline-block">
-                                        <!-- Badge jumlah file -->
                                         <div class="px-3 py-1 rounded-full bg-purple-600 text-white inline-block cursor-pointer hover:bg-purple-700 transition">
                                             📎 {{ $publication->files->count() }} File
                                         </div>
                                         
-                                        <!-- Tooltip daftar file (muncul saat hover) -->
                                         <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block 
                                                     bg-white border border-gray-200 shadow-xl rounded-lg p-3 w-72 text-sm 
                                                     text-gray-700 z-50">
@@ -350,7 +300,7 @@
                                     <span class="text-gray-400 text-sm">Belum ada file</span>
                                 @endif
                             </td>
-                            <!-- Rencana Kegiatan-->
+
                             <!-- Rencana Triwulan I -->
                             <td class="px-4 py-4 text-center">
                                 @if(($publication->rekapPlans[1] ?? 0) > 0)
@@ -358,7 +308,6 @@
                                     <div class="px-3 py-1 rounded-full bg-blue-900 text-white inline-block cursor-pointer hover:bg-blue-800 transition">
                                         {{ $publication->rekapPlans[1] }} Rencana
                                     </div>
-                                    <!-- Tooltip muncul saat hover -->
                                     <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-2 w-64 text-sm text-gray-700 z-50">
                                         <p class="font-semibold text-gray-800 mb-1">Daftar Rencana:</p>
                                         <ul class="list-disc pl-4 space-y-1 max-h-40 overflow-y-auto">
@@ -383,7 +332,6 @@
                                     <div class="px-3 py-1 rounded-full bg-blue-900 text-white inline-block cursor-pointer hover:bg-blue-800 transition">
                                         {{ $publication->rekapPlans[2] }} Rencana
                                     </div>
-                                    <!-- Tooltip muncul saat hover -->
                                     <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-2 w-64 text-sm text-gray-700 z-50">
                                         <p class="font-semibold text-gray-800 mb-1">Daftar Rencana:</p>
                                         <ul class="list-disc pl-4 space-y-1 max-h-40 overflow-y-auto">
@@ -408,7 +356,6 @@
                                     <div class="px-3 py-1 rounded-full bg-blue-900 text-white inline-block cursor-pointer hover:bg-blue-800 transition">
                                         {{ $publication->rekapPlans[3] }} Rencana
                                     </div>
-                                    <!-- Tooltip muncul saat hover -->
                                     <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-2 w-64 text-sm text-gray-700 z-50">
                                         <p class="font-semibold text-gray-800 mb-1">Daftar Rencana:</p>
                                         <ul class="list-disc pl-4 space-y-1 max-h-40 overflow-y-auto">
@@ -433,7 +380,6 @@
                                     <div class="px-3 py-1 rounded-full bg-blue-900 text-white inline-block cursor-pointer hover:bg-blue-800 transition">
                                         {{ $publication->rekapPlans[4] }} Rencana
                                     </div>
-                                    <!-- Tooltip muncul saat hover -->
                                     <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-2 w-64 text-sm text-gray-700 z-50">
                                         <p class="font-semibold text-gray-800 mb-1">Daftar Rencana:</p>
                                         <ul class="list-disc pl-4 space-y-1 max-h-40 overflow-y-auto">
@@ -451,7 +397,7 @@
                                     <p class="text-xs text-gray-500 mt-1">0% Direncanakan</p>
                                 @endif
                             </td>
-                            <!-- Realisasi Kegiatan -->
+
                             <!-- Realisasi Triwulan I -->
                             <td class="px-4 py-4 text-center">
                                 @if(($publication->rekapFinals[1] ?? 0) > 0)
@@ -642,7 +588,6 @@
                             </td>
                             <!-- Aksi -->
                             <td class="px-4 py-4 text-center">
-                                <!-- Tombol Detail -->
                                 <a href="{{ route('steps.index', $publication->slug_publication) }}" 
                                 class="flex gap-1 sm:text-xs px-3 py-1 text-sm text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg mb-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
@@ -664,10 +609,8 @@
                                         editPic: '' 
                                     }">
 
-                                    <!-- Tombol Edit -->
                                     <button onclick="openEditModal('{{ $publication->slug_publication }}', '{{ $publication->publication_report }}', '{{ $publication->publication_name }}', '{{ $publication->publication_pic }}')"
                                         class="flex gap-1 sm:text-xs px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg mb-1">
-                                        <!-- Ikon Pensil -->
                                         <svg xmlns="http://www.w3.org/2000/svg" 
                                             fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
                                             stroke="currentColor" class="w-4 h-4">
@@ -679,7 +622,6 @@
                                         Edit
                                     </button>                              
 
-                                    <!-- Tombol Hapus -->
                                     <form action="{{ route('publications.destroy', $publication->slug_publication) }}" method="POST" 
                                         onsubmit="return confirm('Yakin hapus publikasi ini?')">
                                         @csrf
@@ -704,14 +646,12 @@
                 </tbody>
             </table>
             
-           <!-- Modal Edit Global -->
             <div id="editModal" 
                 class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
 
             <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative" 
                 x-data="{ editReport: '', editOther: false, editReportOther: '' }">
 
-                <!-- Tombol close -->
                 <button type="button" onclick="closeEditModal()" 
                         class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
                 ✖
@@ -725,7 +665,6 @@
                         @method('PUT')
                     @endif
 
-                    <!-- Nama Laporan -->
                     <div class="mb-3">
                         <label class="block text-sm font-medium text-gray-700">Nama Laporan/Publikasi</label>
                         <select id="edit_publication_report" name="publication_report" 
@@ -755,7 +694,6 @@
                         </select>
                     </div>
 
-                    <!-- Input tambahan jika pilih "other" -->
                     <div class="mb-3" x-show="editOther" x-transition>
                         <label class="block text-sm font-medium text-gray-700">Nama Laporan Lainnya</label>
                         <input type="text" name="publication_report_other" 
@@ -765,24 +703,37 @@
                             placeholder="Tulis nama laporan lain di sini...">
                     </div>
 
-                    <!-- Nama Kegiatan -->
                     <div class="mb-3">
                         <label class="block text-sm font-medium">Nama Kegiatan</label>
                         <input type="text" id="edit_name" name="publication_name" 
                             class="w-full border rounded-lg p-2">
                     </div>
 
-                    <!-- PIC -->
                     <div class="mb-3">
-                        <label class="block text-sm font-medium">PIC</label>
-                        <select id="edit_pic" name="publication_pic" 
-                                class="w-full border rounded-lg p-2">
-                        <option value="Umum">Tim Umum</option>
-                        <option value="Produksi">Tim Produksi</option>
-                        <option value="Distribusi">Tim Distribusi</option>
-                        <option value="Neraca">Tim Neraca</option>
-                        <option value="Sosial">Tim Sosial</option>
-                        <option value="IPDS">Tim IPDS</option>
+                        <label class="block text-sm font-medium text-gray-700">PIC</label>
+                        <select name="publication_pic" 
+                            required
+                            class="px-2 py-2 w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <option value="">-- Pilih PIC --</option>
+                            
+                            @php
+                                $user = auth()->user();
+                                $teams = ['Umum', 'Produksi', 'Distribusi', 'Neraca', 'Sosial', 'IPDS'];
+                            @endphp
+
+                            @foreach($teams as $team)
+                                {{-- Ketua tim & operator hanya bisa pilih tim sendiri --}}
+                                @if($user && in_array($user->role, ['ketua_tim', 'operator']))
+                                    @if($user->team === $team)
+                                        <option value="{{ $team }}" selected>Tim {{ $team }}</option>
+                                    @endif
+                                @else
+                                    {{-- Admin bisa pilih semua --}}
+                                    <option value="{{ $team }}" {{ old('publication_pic') == $team ? 'selected' : '' }}>
+                                        Tim {{ $team }}
+                                    </option>
+                                @endif
+                            @endforeach
                         </select>
                     </div>
 
@@ -798,18 +749,15 @@
 </div>
 
 <script>
-// ✅ FIXED: Fungsi openEditModal yang benar
+    
 function openEditModal(slug, report, name, pic) {
-    // 1. Tampilkan modal
     let modal = document.getElementById('editModal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
-    // 2. Update form action dengan slug yang benar
     let form = document.getElementById('editForm');
     form.action = `/publications/${slug}`;
     
-    // 3. Pastikan method spoofing ada
     let methodInput = form.querySelector('input[name="_method"]');
     if (!methodInput) {
         methodInput = document.createElement('input');
@@ -821,46 +769,36 @@ function openEditModal(slug, report, name, pic) {
         methodInput.value = 'PUT';
     }
 
-    // 4. Set nilai field biasa (non-Alpine)
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_pic').value = pic;
 
-    // 5. ✅ FIXED: Set Alpine.js data dengan cara yang benar
-    // Tunggu sampai Alpine ready
     if (window.Alpine) {
-        // Cari elemen yang memiliki x-data
         const alpineElement = modal.querySelector('[x-data]');
         
         if (alpineElement && alpineElement._x_dataStack) {
-            // Akses Alpine component dengan cara yang benar
             const alpineData = alpineElement._x_dataStack[0];
             
-            // Set values
             alpineData.editReport = report;
             alpineData.editOther = (report === 'other');
             alpineData.editReportOther = '';
             
-            // Trigger change detection
             if (window.Alpine.effect) {
                 window.Alpine.effect(() => {
                     alpineData.editReport;
                 });
             }
         } else {
-            // Fallback: Set manual tanpa Alpine
             console.warn('Alpine component not found, using fallback');
             const select = document.getElementById('edit_publication_report');
             if (select) {
                 select.value = report;
                 
-                // Trigger change event untuk menampilkan "other" input
                 const event = new Event('change', { bubbles: true });
                 select.dispatchEvent(event);
             }
         }
     } else {
         console.error('Alpine.js not loaded');
-        // Fallback tanpa Alpine
         const select = document.getElementById('edit_publication_report');
         if (select) {
             select.value = report;
@@ -874,7 +812,7 @@ function closeEditModal() {
     modal.classList.remove('flex');
 }
 
-// ✅ Search functionality
+// Search functionality
 document.getElementById('search').addEventListener('keyup', function() {
     let query = this.value;
     let tbody = document.getElementById('publication-table-body');
@@ -929,7 +867,7 @@ document.getElementById('search').addEventListener('keyup', function() {
         });
 });
 
-// ✅ Helper function untuk generate kolom triwulan (Rencana + Realisasi)
+// Helper function untuk generate kolom triwulan
 function generateQuarterColumns(item) {
     let html = '';
     
@@ -1006,9 +944,8 @@ function generateQuarterColumns(item) {
     return html;
 }
 
-// ✅ Helper function untuk generate tombol aksi
+// Helper function untuk generate tombol aksi
 function generateActionButtons(item) {
-    // Escape string untuk JavaScript
     const escapeQuotes = (str) => (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     
     let html = `
@@ -1022,7 +959,6 @@ function generateActionButtons(item) {
         </a>
     `;
 
-    // Cek role user (dari global variable)
     if (window.userRole === 'ketua_tim' || window.userRole === 'admin') {
         html += `
             <button onclick="openEditModal('${item.slug_publication}', '${escapeQuotes(item.publication_report)}', '${escapeQuotes(item.publication_name)}', '${escapeQuotes(item.publication_pic)}')"
@@ -1045,7 +981,7 @@ function generateActionButtons(item) {
     return html;
 }
 
-// ✅ Delete function
+// Delete function
 function deletePublication(slug_publication) {
     if (!confirm("Yakin ingin menghapus publikasi ini?")) return;
 
@@ -1093,7 +1029,7 @@ function deletePublication(slug_publication) {
     });
 }
 
-// ✅ Skrip untuk modal tambah publikasi
+// Skrip untuk modal tambah publikasi
 document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("publication_report");
     const otherInput = document.getElementById("other_input");
@@ -1105,6 +1041,30 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 otherInput.style.display = "none";
             }
+        });
+    }
+
+    const picSelect = document.querySelector('select[name="publication_pic"]');
+    const form = picSelect?.closest('form');
+    
+    if (form && picSelect) {
+        form.addEventListener('submit', function(e) {
+            const selectedPic = picSelect.value;
+            
+            if (!selectedPic) {
+                e.preventDefault();
+                alert('Pilih PIC terlebih dahulu!');
+                return false;
+            }
+
+            @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'operator']))
+                const userTeam = '{{ auth()->user()->team }}';
+                if (selectedPic !== userTeam) {
+                    e.preventDefault();
+                    alert('Anda hanya bisa membuat publikasi untuk Tim ' + userTeam);
+                    return false;
+                }
+            @endif
         });
     }
 });
@@ -1153,7 +1113,7 @@ function generatePublicationColumn(item) {
     }
 }
 
-// UPDATE fetch search - tambahkan kolom publikasi di tbody.innerHTML
+// Update fetch search 
 document.getElementById('search').addEventListener('keyup', function() {
     let query = this.value;
     let tbody = document.getElementById('publication-table-body');
@@ -1209,3 +1169,15 @@ document.getElementById('search').addEventListener('keyup', function() {
         });
 });
 </script>
+
+{{-- Auto-open modal jika ada error --}}
+@if($errors->any() || session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalTrigger = document.querySelector('[x-data] button');
+        if (modalTrigger) {
+            modalTrigger.click();
+        }
+    });
+</script>
+@endif

@@ -14,17 +14,17 @@ return new class extends Migration
         Schema::create('publication_files', function (Blueprint $table) {
             $table->id('file_id');
             $table->unsignedBigInteger('publication_id');
-            $table->string('file_name'); // Nama asli file dari user
-            $table->string('file_path'); // Path di storage/app/public/publications/
-            $table->string('file_type', 10)->nullable(); // pdf, xlsx, docx, zip
-            $table->unsignedBigInteger('file_size')->nullable(); // dalam bytes
+            $table->string('file_name'); 
+            $table->string('file_path'); 
+            $table->string('file_type', 10)->nullable(); 
+            $table->unsignedBigInteger('file_size')->nullable(); 
             $table->timestamps();
 
             // Foreign key ke tabel publications
             $table->foreign('publication_id')
                   ->references('publication_id')
                   ->on('publications')
-                  ->onDelete('cascade'); // Hapus file jika publikasi dihapus
+                  ->onDelete('cascade'); 
         });
     }
 

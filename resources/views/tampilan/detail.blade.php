@@ -14,19 +14,16 @@
 </head>
 <body>
     <div>
-        {{-- Navbar --}}
         <x-navbar ></x-navbar>
-        {{-- Header --}}
-        <x-header></x-header>
     </div>
 
     <main>
         <div class="max-w-7xl mx-auto px-4 space-y-6" x-data="{ open: false }">
             <div class="p-6">
                 <!-- Header -->
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-6 pt-4">
                     <a href="/" 
-                        class="flex gap-1 rounded-md text-sm px-2 py-2 sm:text-xs hover:bg-emerald-600 hover:text-white"> 
+                        class="flex gap-1 rounded-md text-sm px-2 py-2 sm:text-xs hover:bg-emerald-600 hover:text-white bg-white border shadow rounded-lg"> 
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
                             <path fill-rule="evenodd" d="M14 8a.75.75 0 0 1-.75.75H4.56l3.22 3.22a.75.75 0 1 1-1.06 1.06l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L4.56 7.25h8.69A.75.75 0 0 1 14 8Z" clip-rule="evenodd" />
                         </svg>
@@ -52,7 +49,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-purple-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-blue-600">
                                     <path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Zm10.5 5.707a.5.5 0 0 0-.146-.353l-1-1a.5.5 0 0 0-.708 0L9.354 9.646a.5.5 0 0 1-.708 0L6.354 7.354a.5.5 0 0 0-.708 0l-2 2a.5.5 0 0 0-.146.353V12a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V9.707ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" />
                                 </svg>
                                 File Publikasi
@@ -81,14 +78,14 @@
                         @submit="uploading = true">
                         @csrf
                         
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-purple-400 transition">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition">
                             <div class="flex flex-col items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-gray-400 mb-3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                                 </svg>
                                 
                                 <label for="file-upload" class="cursor-pointer">
-                                    <span class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition inline-block">
+                                    <span class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
                                         Pilih File
                                     </span>
                                     <input id="file-upload" 
@@ -113,7 +110,7 @@
 
                         <button type="submit" 
                                 :disabled="uploading"
-                                class="mt-4 w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                class="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
                             <span x-show="!uploading">📤 Upload File</span>
                             <span x-show="uploading" class="flex items-center justify-center gap-2">
                                 <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -141,10 +138,7 @@
                             <div class="border rounded-lg p-4 hover:shadow-md transition">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <!-- Icon -->
                                         <span class="text-3xl">{{ $file->file_icon }}</span>
-                                        
-                                        <!-- Info -->
                                         <div class="flex-1 min-w-0">
                                             <p class="font-medium text-gray-800 truncate" title="{{ $file->file_name }}">
                                                 {{ $file->file_name }}
@@ -194,8 +188,8 @@
                     @endif
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-4 items-center">
-                    <!-- Search (2 kolom di layar besar) -->
+                <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-4 items-center pt-12">
+                    <!-- Search -->
                     <div class="{{ (auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin'])) ? 'sm:col-span-4' : 'sm:col-span-6' }}">
                             <input 
                             type="text" 
@@ -230,27 +224,21 @@
                                     Tahapan
                                 </button>
 
-                                <!-- Modal -->
                                 <div 
                                     x-show="open" 
                                     x-transition 
                                     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                                     <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-                                        <!-- Tombol close -->
                                         <button 
                                             @click="open = false" 
                                             class="absolute top-2 right-2 text-gray-600 hover:text-red-600">
                                             ✖
                                         </button>
-                                        <!-- Modal Content -->
                                         <h2 class="text-lg font-semibold">Tambah Tahapan</h2>
                                         <p class="text-sm text-gray-500 mb-2">Tambahkan tahapan baru untuk publikasi/laporan</p>
-                                        <!-- Form -->
                                         <form method="POST" action="{{ route('steps.store', $publication->slug_publication) }}">
                                             @csrf
-                                            <!-- publication -->
                                             <input type="hidden" name="publication_id" value="{{ $publication->slug_publication }}">
-                                            <!-- Jenis Tahapan -->
                                             <div class="mb-3">
                                                 <label class="block text-sm font-medium text-gray-700">Jenis Tahapan</label>
                                                 <select name="plan_type" 
@@ -397,9 +385,8 @@
                     },
 
                     }" x-init="updateFormValidity()" class="bg-white rounded-xl shadow p-6 border mb-5">
-                        <!-- Header Card (selalu ada) -->
+                        
                         <div class="flex items-center justify-between mb-4">
-                            <!-- persiapan -->
                             <div class="flex items-center gap-3">
                                 @php
                                     $colors = [
@@ -428,7 +415,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Modal Edit Tahapan -->
+                            
                             @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin', 'operator']))
                                 <div x-data="{ open: false }">
                                     <button 
@@ -487,7 +474,7 @@
                             @endif
                         </div>
 
-                        <!-- Konten Card (hanya tampil kalau editMode = false) -->
+                        <!-- Konten Card -->
                         <div x-show="!editMode" x-transition>
                             <div class="grid md:grid-cols-2 gap-6">
                                 <!-- Rencana -->
@@ -593,7 +580,6 @@
                                                 Hapus
                                             </button>
 
-                                            <!-- Modal -->
                                             <div
                                                 x-show="showConfirm"
                                                 x-transition 
@@ -601,7 +587,6 @@
                                                 <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
                                                     <h2 class="text-lg font-semibold text-gray-800">Hapus Tahapan</h2>
                                                     <p class="text-xs text-gray-500">Apakah Anda yakin ingin menghapus tahapan "{{ $plan->plan_type }}" ini ? </p>
-                                                    <!-- Tombol Simpan -->
                                                     <div class="flex justify-end mt-4 gap-2">
                                                         <button  @click="showConfirm = false" 
                                                             class="text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
@@ -633,9 +618,8 @@
                             </div>
                         </div>
 
-                        <!-- Konten Card (hanya tampil kalau editMode = true) -->
+                        <!-- Konten Card -->
                         <div x-show="editMode">
-                            <!-- button -->
                             <div class="flex space-x-2 mb-4">
                                 <button type="button" 
                                         class=" text-xs px-4 py-2 rounded"
@@ -657,7 +641,6 @@
                                     @csrf
                                     @method('PUT')
                                     @include('detail.form-rencana', ['plan' => $plan])
-                                    <!-- Buttons -->
                                     <div class="flex justify-end space-x-2 mt-4">
                                         <button type="button" @click="editMode = false"
                                             class="text-xs sm:text-sm bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded">
@@ -680,7 +663,6 @@
                                         $struggle = $final->struggles->first() ?? new \App\Models\Struggle();
                                     @endphp
                                     @include('detail.form-realisasi', ['final' => $final, 'struggle' => $struggle])
-                                    <!-- Buttons -->
                                     <div class="flex justify-end space-x-2 mt-4">
                                         <button type="button" @click="editMode = false"
                                             class="text-xs sm:text-sm bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded">
@@ -709,12 +691,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Ambil semua tombol dengan kelas '.add-struggle-button'
         const addButtons = document.querySelectorAll('.add-struggle-button');
 
         addButtons.forEach(button => {
             button.addEventListener('click', function () {
-                // Temukan 'struggles-wrapper' yang terdekat dengan tombol yang diklik
                 const wrapper = this.parentNode.querySelector('.struggles-wrapper');
                 const struggleItems = wrapper.querySelectorAll('.struggle-item');
                 const struggleIndex = struggleItems.length;
@@ -743,7 +723,6 @@
             });
         });
 
-        // Menggunakan delegasi event untuk tombol hapus
         document.addEventListener('click', function(event) {
             if (event.target.closest('.delete-struggle-button')) {
                 const struggleItem = event.target.closest('.struggle-item');
@@ -752,13 +731,10 @@
         });
     });
 
-    // 1. Fungsi Debounce: Menunda eksekusi fungsi sampai jeda waktu tertentu
     function debounce(func, delay) {
         let timeoutId;
         return function(...args) {
-            // Hapus timer sebelumnya
             clearTimeout(timeoutId);
-            // Set timer baru
             timeoutId = setTimeout(() => {
                 func.apply(this, args);
             }, delay);
@@ -769,34 +745,21 @@
         const searchInput = document.getElementById('search-input');
         
         if (searchInput) {
-            // URL dasar untuk routing Laravel (dari form action sebelumnya)
             const baseUrl = "{{ route('steps.index', $publication->slug_publication) }}";
 
-            // 2. Fungsi untuk Melakukan Pencarian
             const performSearch = function() {
                 const searchText = searchInput.value.trim();
-                
-                // Buat objek URL baru
                 const url = new URL(baseUrl);
-                
-                // Hapus semua parameter yang ada saat ini
                 url.search = '';
                 
-                // Tambahkan parameter 'search' jika ada teks
                 if (searchText) {
                     url.searchParams.set('search', searchText);
                 }
                 
-                // Arahkan ulang ke URL baru.
-                // Ini akan memicu request ke back-end Laravel.
                 window.location.href = url.toString();
             };
 
-            // 3. Terapkan Debounce (misalnya, tunda 400 milidetik / 0.4 detik)
             const debouncedSearch = debounce(performSearch, 400);
-
-            // 4. Tambahkan Event Listener pada setiap input
-            // Event 'input' dipicu setiap kali nilai input berubah
             searchInput.addEventListener('input', debouncedSearch);
         }
     });

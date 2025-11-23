@@ -20,10 +20,8 @@ class StepsFinalController extends Controller
         $final = StepsFinal::firstOrNew(['step_plan_id' => $plan->step_plan_id]);
         $existingFinalDoc = $final->final_doc;
 
-        // Validasi final_doc (required hanya jika belum ada)
         $finalDocValidation = $existingFinalDoc ? 'nullable|file|mimes:pdf,jpg,png,jpeg,docx|max:2048' : 'required|file|mimes:pdf,jpg,png,jpeg,docx|max:2048';
         
-        // Validasi input untuk StepsFinal
         $validatedFinal = $request->validate([
             'actual_started' => 'required|date',
             'actual_ended'   => 'required|date|after_or_equal:actual_started',
@@ -32,14 +30,10 @@ class StepsFinalController extends Controller
             'final_doc'      => $finalDocValidation,
         ]);
 
-        // Rule ini akan digunakan untuk struggle_desc dan solution_desc
         $minThreeWordsRule = function (string $attribute, mixed $value, Closure $fail) {
-            // Hilangkan tag HTML dan spasi di awal/akhir
             $cleanValue = strip_tags((string)$value);
             $cleanValue = trim($cleanValue);
             
-            // Hitung kata dengan preg_match_all agar angka juga dihitung
-            // Pattern: kata yang terdiri dari huruf dan/atau angka
             preg_match_all('/[\p{L}\d]+/u', $cleanValue, $matches);
             $wordCount = count($matches[0]);
             
@@ -82,7 +76,6 @@ class StepsFinalController extends Controller
         // DEBUG: Tampilkan data struggles sebelum validasi
         \Log::info('Struggles data before validation:', $request->input('struggles', []));
 
-        // Validasi input untuk Struggle
         $validatedStruggle = $request->validate([
             'struggles.*.struggle_desc'  => ['required', 'string'],
             'struggles.*.solution_desc'  => ['required', 'string'],
@@ -93,7 +86,6 @@ class StepsFinalController extends Controller
         \Log::info('Starting save process...');
         \Log::info('Final data before save:', $validatedFinal);
 
-        // Cek dan simpan file dokumen realisasi
         if ($request->hasFile('final_doc')) {
             if ($existingFinalDoc) {
                 \Storage::disk('public')->delete($existingFinalDoc);
@@ -106,41 +98,34 @@ class StepsFinalController extends Controller
 
         $final->fill($validatedFinal);
         $final->save();
-        $final->refresh(); // Refresh untuk mendapatkan ID yang baru disimpan
+        $final->refresh();
         
         \Log::info('StepsFinal saved successfully', ['id' => $final->id]);
 
-        // simpan struggles
+        // Simpan struggles
         if ($request->has('struggles')) {
-            // Mendapatkan ID struggles yang dikirim dari form
             $submittedStruggleIds = collect($request->input('struggles'))->pluck('struggle_id')->filter()->all();
 
-            // Hapus struggles lama yang tidak dikirim di form
             $final->struggles()->whereNotIn('id', $submittedStruggleIds)->delete();
             
             foreach ($request->struggles as $i => $struggleData) {
                 \Log::info("Processing struggle #{$i}", $struggleData);
                 
-                // Coba cari struggle lama berdasarkan ID, atau buat instance baru jika tidak ada ID
                 $struggle = $final->struggles()->find($struggleData['struggle_id'] ?? null) ?? new Struggle();
             
                 $struggle->struggle_desc = $struggleData['struggle_desc'];
                 $struggle->solution_desc = $struggleData['solution_desc'];
 
-                // Kalau ada file upload sesuai indeks struggle
                 if ($request->hasFile("struggles.$i.solution_doc")) {
-                   // Hapus dokumen lama jika ada
                     if ($struggle->solution_doc) {
                         \Storage::disk('public')->delete($struggle->solution_doc);
                     }
                     $path = $request->file("struggles.$i.solution_doc")->store('documents', 'public');
                     $struggle->solution_doc = $path;
                 } else {
-                    // Jika tidak ada file baru, periksa apakah ada path dokumen lama yang dikirim
                     if (isset($struggleData['existing_solution_doc'])) {
                         $struggle->solution_doc = $struggleData['existing_solution_doc'];
                     } else {
-                        // Jika tidak ada file baru dan tidak ada file lama, atur menjadi null
                         $struggle->solution_doc = null;
                     }
                 }

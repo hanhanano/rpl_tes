@@ -17,10 +17,7 @@
 </head>
 <body>
     <div>
-        {{-- Navbar --}}
         <x-navbar ></x-navbar>
-        {{-- Header --}}
-        <x-header></x-header>
     </div>
 
     <main>
@@ -46,13 +43,12 @@
                     Pengguna Baru
                 </button>
             @endif
-            <!-- Modal -->
+            
             <div 
                 x-show="open" 
                 x-transition 
                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-                    <!-- Tombol close -->
                     <button 
                         @click="open = false" 
                         class="absolute top-2 right-2 text-gray-600 hover:text-red-600">
@@ -60,8 +56,7 @@
                     </button>
                     
                     <h2 class="text-lg font-semibold">Formulir Tambah Pengguna Baru</h2>
-                    <!-- Form -->
-                    <form method="POST" action="{{ route('admin.store') }}">
+                    <form method="POST" action="{{ route('admin.store') }}" x-data="{ role: '' }">
                         @csrf
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700">Nama</label>
@@ -73,24 +68,41 @@
                         </div>
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700">Role</label>
-                            <select name="role" class="w-full border rounded px-3 py-2 mt-1">
+                            <select name="role" x-model="role" required
+                                class="w-full border rounded px-3 py-2 mt-1">
+                                <option value="">-- Pilih Role --</option>
+                                <option value="admin">Admin</option>
                                 <option value="ketua_tim">Ketua Tim</option>
-                                <option value="operator">Operator</option>
+                                <option value="operator">Operator/Anggota</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" x-show="role === 'ketua_tim' || role === 'operator'" x-transition>
+                            <label class="block text-sm font-medium text-gray-700">Tim</label>
+                            <select name="team" 
+                                :required="role === 'ketua_tim' || role === 'operator'"
+                                class="w-full border rounded px-3 py-2 mt-1">
+                                <option value="">-- Pilih Tim --</option>
+                                <option value="Umum">Tim Umum</option>
+                                <option value="Produksi">Tim Produksi</option>
+                                <option value="Distribusi">Tim Distribusi</option>
+                                <option value="Neraca">Tim Neraca</option>
+                                <option value="Sosial">Tim Sosial</option>
+                                <option value="IPDS">Tim IPDS</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700">Password</label>
-                            <input type="password" name="password" class="w-full border rounded px-3 py-2 mt-1">
+                            <input type="password" name="password" required
+                                class="w-full border rounded px-3 py-2 mt-1">
                         </div>
                         <div class="flex justify-end gap-2">
-                            <button type="button" 
-                                    data-modal-hide="modalAddUser"
-                                    class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                                    @click="open = false">
+                            <button type="button" @click="open = false"
+                                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
                                 Batal
                             </button>
-                            <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                 Simpan
                             </button>
                         </div>
@@ -114,51 +126,59 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm border-collapse">
                 <thead class="bg-gray-100 text-gray-600 text-xs">
-                    <!-- Header Kolom -->
                     <tr>
                         <th class="px-3 py-2 border">No</th>
                         <th class="px-3 py-2 border">Nama Pengguna/Pegawai</th>
                         <th class="px-3 py-2 border">Email</th>
                         <th class="px-3 py-2 border">Role</th>
+                        <th class="px-3 py-2 border">Tim</th>
                         <th class="px-3 py-2 border">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="user-table-body">
-                    <!-- Isi Tabel -->
-                    @if($users->count())
                     @foreach($users as $index => $user)
-                    <tr>
-                        <!-- No -->
-                        <td class="px-4 py-4 align-top">{{ $index + 1 }}</td>
-                        <!-- Nama Pengguna -->
-                        <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $user->name }}</td>
-                        <!-- Email Pengguna -->
-                        <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $user->email }}</td>
-                        <!-- Role -->
-                        <td class="px-4 py-4 align-top font-semibold text-gray-700">{{ $user->role }}</td>
-                        <!-- Aksi -->
-                        <td class="px-4 py-4 text-center relative" x-data="{ open: false}">
-                            @if(auth()->check() && auth()->user()->role === 'admin')
-                                <form method="POST" action="{{ route('admin.destroy', $user->id) }}" onsubmit="return confirm('Yakin hapus data pengguna ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="flex gap-1 sm:text-xs w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-600 hover:text-white">
-                                        {{-- icon --}}
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-                                            <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
-                        </td>
-                    </tr>
-                            @else
-                    <tr>
-                        <td colspan="14" class="text-center text-gray-500 py-4">Tidak ada data ditemukan</td>
-                    </tr>
-                    @endif
+                        <tr>
+                            <td class="px-4 py-4 align-top">{{ $index + 1 }}</td>
+
+                            <td class="px-4 py-4 align-top font-semibold text-gray-700">
+                                {{ $user->name }}
+                            </td>
+
+                            <td class="px-4 py-4 align-top font-semibold text-gray-700">
+                                {{ $user->email }}
+                            </td>
+
+                            <td class="px-4 py-4 align-top font-semibold text-gray-700">
+                                {{ $user->role }}
+                            </td>
+
+                            <td class="px-4 py-4 align-top font-semibold text-gray-700">
+                                {{ $user->team ?? '-' }}
+                            </td>
+
+                            <td class="px-4 py-4 text-center">
+                                {{-- Aksi hanya untuk admin --}}
+                                @if(auth()->check() && auth()->user()->role === 'admin')
+                                    <form method="POST" action="{{ route('admin.destroy', $user->id) }}" onsubmit="return confirm('Yakin hapus data pengguna ini?')">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit"
+                                            class="flex gap-1 sm:text-xs w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-600 hover:text-white">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                                fill="currentColor" class="size-4">
+                                                <path fill-rule="evenodd"
+                                                    d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
                     @endforeach
-                    @endif
                 </tbody>
             </table>
         </div>
@@ -192,44 +212,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch(`{{ route('admin.search') }}?query=${query}`)
            .then(response => response.json())
-.then(data => {
-    tbody.innerHTML = "";
+            .then(data => {
+                tbody.innerHTML = "";
 
-    if (data.length > 0) {
-        data.forEach((item, index) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td class="px-4 py-4">${index + 1}</td>
-                    <td class="px-4 py-4">${item.name}</td>
-                    <td class="px-4 py-4">${item.email}</td>
-                    <td class="px-4 py-4">${item.role}</td>
-                    <td class="px-4 py-4 text-center">
-                    <form method="POST" action="{{ route('admin.destroy', $user->id) }}" onsubmit="return confirm('Yakin hapus data pengguna ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="flex gap-1 sm:text-xs w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-600 hover:text-white">
-                                        {{-- icon --}}
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-                                            <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
-                </td>
-                </tr>
-            `;
-        });
-    } else {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="14" class="text-center text-gray-500 py-4">
-                    Tidak ada data ditemukan
-                </td>
-            </tr>
-        `;
-    }
-})
-
+                if (data.length > 0) {
+                    data.forEach((item, index) => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="px-4 py-4">${index + 1}</td>
+                                <td class="px-4 py-4">${item.name}</td>
+                                <td class="px-4 py-4">${item.email}</td>
+                                <td class="px-4 py-4">${item.role}</td>
+                                <td class="px-4 py-4">${item.team || '-'}</td>
+                                <td class="px-4 py-4 text-center">
+                                    <form method="POST" action="{{ route('admin.destroy', $user->id) }}" onsubmit="return confirm('Yakin hapus data pengguna ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="flex gap-1 sm:text-xs w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-600 hover:text-white">
+                                            {{-- icon --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                                                <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="14" class="text-center text-gray-500 py-4">
+                                Tidak ada data ditemukan
+                            </td>
+                        </tr>
+                    `;
+                }
+            })
             .catch(err => console.error(err));
     });
 });

@@ -9,22 +9,31 @@ use App\Http\Controllers\StepsFinalController;
 use App\Http\Controllers\StepsController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\PublicationExportController;
+use App\Http\Controllers\LaporanController;
+use App\Models\Publication;
 
 /*
-|--------------------------------------------------------------------------
+|---------------------
 | Web Routes
-|--------------------------------------------------------------------------
+|---------------------
 */
 
 // Halaman utama
-Route::get('/', [PublicationController::class, 'index'])->name('daftarpublikasi');
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
+// Tambahkan middleware('auth') agar hanya user yang sudah login bisa akses
+Route::get('/dashboard', [PublicationController::class, 'index'])
+    ->name('daftarpublikasi')
+    ->middleware('auth');
 
 // Laporan
 Route::get('/laporan', function () {
     return view('/tampilan/laporan');
 })->name('laporan');
 
-// ==================== Publications ====================
+// ----- Publications -----
 // Export
 Route::get('/publications/exportTable', [PublicationExportController::class, 'exportTable'])->name('publications.exportTable');
 Route::get('/publications/export-template/{slug_publication}', [PublicationExportController::class, 'exportTemplate'])->name('publications.export.template');
@@ -41,7 +50,7 @@ Route::resource('publications', PublicationController::class);
 // Hapus publication
 Route::delete('/publications/{slug_publication}', [PublicationController::class, 'destroy'])->name('publications.destroy');
 
-// ==================== Steps / Tahapan ====================
+// ----- Steps / Tahapan -----
 // Tampilkan tahapan untuk 1 publikasi
 Route::get('/publications/{publication}/steps', [StepsPlanController::class, 'index'])->name('steps.index');
 
@@ -59,7 +68,7 @@ Route::delete('/plans/{plan}', [StepsPlanController::class, 'destroy'])->name('p
 // Export Tahapan
 Route::get('/export/publication/{slug_publication}', [PublicationExportController::class, 'export'])->name('publication.export');
 
-// ==================== Auth ====================
+// ----- Auth -----
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -68,7 +77,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
 Route::post('/change-password', [AuthController::class, 'updatePassword'])->name('password.update');
 
-// ==================== Admin ====================
+// ----- Admin -----
 Route::get('/admin', [AdminController::class, 'index'])->name('adminpage');
 Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
 Route::post('/admin/store', [AdminController::class, 'store'])->name('admin.store');

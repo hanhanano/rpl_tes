@@ -20,15 +20,11 @@
 <body>
     <body>
     <div>
-        {{-- Navbar --}}
         <x-navbar ></x-navbar>
-        {{-- Header --}}
-        <x-header></x-header>
     </div>
 
     <main>
         <div class="max-w-md mx-auto mt-10 bg-white rounded-lg shadow p-6">
-            <!-- tampilkan nama user yang login -->
             <p class="mb-4 text-gray-700">
                 Halo, <strong>{{ auth()->user()->name }}</strong>!
             </p>

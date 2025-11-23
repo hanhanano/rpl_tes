@@ -2,41 +2,53 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        // Admin
         User::create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'team' => null, 
+        ]);
+
+        // Ketua Tim per PIC
+        $teams = ['Umum', 'Produksi', 'Distribusi', 'Neraca', 'Sosial', 'IPDS'];
+        
+        foreach ($teams as $team) {
+            // Ketua Tim
+            User::create([
+                'name' => "Ketua Tim {$team}",
+                'email' => strtolower("ketua.{$team}@example.com"),
+                'password' => Hash::make('password'),
+                'role' => 'ketua_tim',
+                'team' => $team,
             ]);
-        User::create([
-            'name' => 'Ketua Tim',
-            'email' => 'ketua@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'ketua_tim',
-        ]);
-        User::create([
-            'name' => 'Operator',
-            'email' => 'operator@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'operator',
-        ]);
+
+            // Operator/Anggota Tim
+            User::create([
+                'name' => "Operator {$team}",
+                'email' => strtolower("operator.{$team}@example.com"),
+                'password' => Hash::make('password'),
+                'role' => 'operator',
+                'team' => $team,
+            ]);
+        }
+
+        // Viewer 
         User::create([
             'name' => 'Viewer',
             'email' => 'viewer@example.com',
             'password' => Hash::make('password'),
             'role' => 'viewer',
+            'team' => null, 
         ]);
     }
 }

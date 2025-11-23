@@ -20,17 +20,13 @@ class PublicationFile extends Model
         'file_size',
     ];
 
-    /**
-     * Relasi: File ini milik satu Publication
-     */
+    // Relasi: File ini milik satu Publication
     public function publication()
     {
         return $this->belongsTo(Publication::class, 'publication_id', 'publication_id');
     }
 
-    /**
-     * Accessor: Ukuran file dalam format human-readable
-     */
+    // Accessor: Ukuran file dalam format human-readable     
     public function getFileSizeHumanAttribute()
     {
         $bytes = $this->file_size;
@@ -45,9 +41,7 @@ class PublicationFile extends Model
         }
     }
 
-    /**
-     * Accessor: Icon berdasarkan file type
-     */
+    // Accessor: Icon berdasarkan file type
     public function getFileIconAttribute()
     {
         $icons = [
