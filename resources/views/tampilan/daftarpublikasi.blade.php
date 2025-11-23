@@ -268,7 +268,7 @@
                             </td>
 
                             <td class="px-4 py-4 align-top text-center">
-                                @if($publication->files->count() > 0)
+                                @if(optional($publication->publicationPlans)->count() > 0)
                                     <div class="relative group inline-block">
                                         <div class="px-3 py-1 rounded-full bg-purple-600 text-white inline-block cursor-pointer hover:bg-purple-700 transition">
                                             📎 {{ $publication->files->count() }} File
@@ -637,7 +637,7 @@
                                 @endif
                             </td>
                         </tr>
-                        @if($publication->publicationPlans->count() > 0)
+                        @if(isset($publication->publicationPlans) && $publication->publicationPlans->count() > 0)
                             <div class="relative group inline-block">
                                 <div class="px-3 py-1 rounded-full bg-purple-600 text-white inline-block cursor-pointer hover:bg-purple-700 transition">
                                     📎 {{ $publication->publicationPlans->count() }} Output

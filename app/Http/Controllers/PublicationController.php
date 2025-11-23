@@ -342,7 +342,8 @@ class PublicationController extends Controller
 
         $query = Publication::with([
             'user',
-            'stepsPlans.stepsFinals'
+            'stepsPlans.stepsFinals.struggles',
+            'publicationPlans.publicationFinal'
         ]);
 
         if ($user && in_array($user->role, ['ketua_tim', 'operator'])) {
