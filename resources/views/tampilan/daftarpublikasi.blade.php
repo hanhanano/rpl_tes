@@ -637,6 +637,50 @@
                                 @endif
                             </td>
                         </tr>
+                        @if($publication->publicationPlans->count() > 0)
+                            <div class="relative group inline-block">
+                                <div class="px-3 py-1 rounded-full bg-purple-600 text-white inline-block cursor-pointer hover:bg-purple-700 transition">
+                                    📎 {{ $publication->publicationPlans->count() }} Output
+                                </div>
+                                
+                                <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block 
+                                            bg-white border border-gray-200 shadow-xl rounded-lg p-3 w-72 text-sm 
+                                            text-gray-700 z-50">
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Zm10.5 5.707a.5.5 0 0 0-.146-.353l-1-1a.5.5 0 0 0-.708 0L9.354 9.646a.5.5 0 0 1-.708 0L6.354 7.354a.5.5 0 0 0-.708 0l-2 2a.5.5 0 0 0-.146.353V12a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V9.707ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" />
+                                        </svg>
+                                        Daftar Output Publikasi:
+                                    </p>
+                                    <ul class="space-y-1.5 max-h-48 overflow-y-auto">
+                                        @foreach($publication->publicationPlans as $pp)
+                                            <li class="flex items-start gap-2 text-xs hover:bg-gray-50 p-1.5 rounded">
+                                                <span class="text-base">
+                                                    @if($pp->publicationFinal)
+                                                        ✅
+                                                    @else
+                                                        📝
+                                                    @endif
+                                                </span>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="font-medium truncate">{{ $pp->plan_name }}</p>
+                                                    <p class="text-gray-500">
+                                                        @if($pp->plan_date)
+                                                            Rencana: {{ $pp->plan_date->format('d M Y') }}
+                                                        @endif
+                                                        @if($pp->publicationFinal && $pp->publicationFinal->actual_date)
+                                                            <br>Terbit: {{ $pp->publicationFinal->actual_date->format('d M Y') }}
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        @else
+                            <span class="text-gray-400 text-sm">Belum ada output</span>
+                        @endif
                         @endforeach
                     @else
                     <tr>
@@ -1071,14 +1115,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Tambahkan function baru untuk generate kolom publikasi
 function generatePublicationColumn(item) {
-    const filesCount = item.filesCount || 0;
-    const filesList = item.filesList || [];
+    const pubPlansCount = item.publicationPlansCount || 0;
+    const pubPlansList = item.publicationPlansList || [];
     
-    if (filesCount > 0) {
-        const filesListHtml = filesList.map(fileName => `
+    if (pubPlansCount > 0) {
+        const plansListHtml = pubPlansList.map(pp => `
             <li class="flex items-start gap-2 text-xs hover:bg-gray-50 p-1.5 rounded">
-                <span class="text-base">📎</span>
-                <p class="font-medium truncate">${fileName}</p>
+                <span class="text-base">${pp.hasFinal ? '✅' : '📝'}</span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium truncate">${pp.name}</p>
+                    <p class="text-gray-500">
+                        ${pp.planDate ? 'Rencana: ' + pp.planDate : ''}
+                        ${pp.actualDate ? '<br>Terbit: ' + pp.actualDate : ''}
+                    </p>
+                </div>
             </li>
         `).join('');
         
@@ -1086,7 +1136,7 @@ function generatePublicationColumn(item) {
             <td class="px-4 py-4 align-top text-center">
                 <div class="relative group inline-block">
                     <div class="px-3 py-1 rounded-full bg-purple-600 text-white inline-block cursor-pointer hover:bg-purple-700 transition">
-                        📎 ${filesCount} File
+                        📎 ${pubPlansCount} Output
                     </div>
                     <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block 
                                 bg-white border border-gray-200 shadow-xl rounded-lg p-3 w-72 text-sm 
@@ -1095,10 +1145,10 @@ function generatePublicationColumn(item) {
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                                 <path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Zm10.5 5.707a.5.5 0 0 0-.146-.353l-1-1a.5.5 0 0 0-.708 0L9.354 9.646a.5.5 0 0 1-.708 0L6.354 7.354a.5.5 0 0 0-.708 0l-2 2a.5.5 0 0 0-.146.353V12a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V9.707ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" />
                             </svg>
-                            Daftar File Publikasi:
+                            Daftar Output:
                         </p>
                         <ul class="space-y-1.5 max-h-48 overflow-y-auto">
-                            ${filesListHtml}
+                            ${plansListHtml}
                         </ul>
                     </div>
                 </div>
@@ -1107,7 +1157,7 @@ function generatePublicationColumn(item) {
     } else {
         return `
             <td class="px-4 py-4 align-top text-center">
-                <span class="text-gray-400 text-sm">Belum ada file</span>
+                <span class="text-gray-400 text-sm">Belum ada output</span>
             </td>
         `;
     }

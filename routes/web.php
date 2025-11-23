@@ -102,3 +102,20 @@ Route::get('/publication-files/{file}/download', [PublicationController::class, 
 Route::get('/publications/{publication}/download-all', [PublicationController::class, 'downloadAllFiles'])
     ->name('publications.downloadAllFiles')
     ->middleware('auth');
+
+    // Publication Plans (Output Publikasi)
+Route::post('/publications/{publication}/publication-plans', [PublicationPlanController::class, 'store'])
+    ->name('publication-plans.store')
+    ->middleware('auth');
+
+Route::put('/publication-plans/{plan}/update-plan', [PublicationPlanController::class, 'updatePlan'])
+    ->name('publication-plans.update-plan')
+    ->middleware('auth');
+
+Route::put('/publication-plans/{plan}/update-final', [PublicationPlanController::class, 'updateFinal'])
+    ->name('publication-plans.update-final')
+    ->middleware('auth');
+
+Route::delete('/publication-plans/{plan}', [PublicationPlanController::class, 'destroy'])
+    ->name('publication-plans.destroy')
+    ->middleware('auth');

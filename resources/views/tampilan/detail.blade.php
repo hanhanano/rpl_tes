@@ -44,7 +44,7 @@
                     </div>
                 </div>
 
-                <div class="max-w-6xl mx-auto mt-6 p-6 bg-white border shadow rounded-lg" x-data="{ uploading: false }">
+                <div class="max-w-6xl mx-auto mt-6 p-6 bg-white border shadow rounded-lg">
                     <!-- Header Section -->
                     <div class="flex justify-between items-center mb-4">
                         <div>
@@ -52,141 +52,276 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 text-blue-600">
                                     <path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Zm10.5 5.707a.5.5 0 0 0-.146-.353l-1-1a.5.5 0 0 0-.708 0L9.354 9.646a.5.5 0 0 1-.708 0L6.354 7.354a.5.5 0 0 0-.708 0l-2 2a.5.5 0 0 0-.146.353V12a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V9.707ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" />
                                 </svg>
-                                File Publikasi
+                                Rencana & Realisasi Publikasi
                             </h3>
-                            <p class="text-sm text-gray-500">Upload output akhir publikasi (PDF, Excel, Word, ZIP)</p>
+                            <p class="text-sm text-gray-500">Kelola output publikasi dengan sistem rencana dan realisasi per triwulan</p>
                         </div>
 
-                        @if($publication->files->count() > 0)
-                            <a href="{{ route('publications.downloadAllFiles', $publication->slug_publication) }}" 
-                            class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition text-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                                    <path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z" />
-                                    <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z" />
-                                </svg>
-                                Unduh Semua (ZIP)
-                            </a>
+                        @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin', 'operator']))
+                        <button x-data @click="$dispatch('open-modal', 'add-publication-plan')"
+                                class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                                <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
+                            </svg>
+                            Tambah Publikasi
+                        </button>
                         @endif
                     </div>
 
-                    <!-- Upload Form -->
-                    @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin', 'anggota']))
-                    <form action="{{ route('publications.uploadFiles', $publication->slug_publication) }}" 
-                        method="POST" 
-                        enctype="multipart/form-data"
-                        class="mb-6"
-                        @submit="uploading = true">
-                        @csrf
-                        
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition">
-                            <div class="flex flex-col items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-gray-400 mb-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                                </svg>
-                                
-                                <label for="file-upload" class="cursor-pointer">
-                                    <span class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
-                                        Pilih File
-                                    </span>
-                                    <input id="file-upload" 
-                                        name="files[]" 
-                                        type="file" 
-                                        multiple 
-                                        accept=".pdf,.xlsx,.xls,.docx,.doc,.zip"
-                                        class="hidden"
-                                        onchange="updateFileList(this)">
-                                </label>
-                                
-                                <p class="text-sm text-gray-500 mt-2">atau drag & drop file di sini</p>
-                                <p class="text-xs text-gray-400 mt-1">PDF, Excel, Word, ZIP (Max 10MB per file, max 10 files)</p>
-                            </div>
-
-                            <!-- Preview file yang dipilih -->
-                            <div id="file-preview" class="mt-4 hidden">
-                                <p class="text-sm font-medium text-gray-700 mb-2">File yang akan diupload:</p>
-                                <ul id="file-list" class="space-y-1 text-sm text-gray-600"></ul>
-                            </div>
-                        </div>
-
-                        <button type="submit" 
-                                :disabled="uploading"
-                                class="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            <span x-show="!uploading">📤 Upload File</span>
-                            <span x-show="uploading" class="flex items-center justify-center gap-2">
-                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Mengupload...
-                            </span>
-                        </button>
-                    </form>
-                    @endif
-
-                    <!-- Daftar File yang Sudah Diupload -->
-                    @if($publication->files->count() > 0)
-                    <div>
-                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-gray-600">
-                                <path fill-rule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h4.836c.464 0 .909.184 1.237.513l1.414 1.414c.329.328.513.773.513 1.237v4.586A1.75 1.75 0 0 1 10 12.75h-6.25A1.75 1.75 0 0 1 2 11V4.75Z" clip-rule="evenodd" />
-                            </svg>
-                            File Tersimpan ({{ $publication->files->count() }})
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            @foreach($publication->files as $file)
-                            <div class="border rounded-lg p-4 hover:shadow-md transition">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <span class="text-3xl">{{ $file->file_icon }}</span>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-medium text-gray-800 truncate" title="{{ $file->file_name }}">
-                                                {{ $file->file_name }}
-                                            </p>
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                {{ $file->file_size_human }} • 
-                                                {{ $file->created_at->format('d M Y, H:i') }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actions -->
-                                    <div class="flex gap-1">
-                                        <!-- Download -->
-                                        <a href="{{ route('publications.downloadFile', $file->file_id) }}" 
-                                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                        title="Download">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                                                <path d="M8.75 2.75a.75.75 0 0 0-1.5 0v5.69L5.03 6.22a.75.75 0 0 0-1.06 1.06l3.5 3.5a.75.75 0 0 0 1.06 0l3.5-3.5a.75.75 0 0 0-1.06-1.06L8.75 8.44V2.75Z" />
-                                                <path d="M3.5 9.75a.75.75 0 0 0-1.5 0v1.5A2.75 2.75 0 0 0 4.75 14h6.5A2.75 2.75 0 0 0 14 11.25v-1.5a.75.75 0 0 0-1.5 0v1.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-1.5Z" />
-                                            </svg>
-                                        </a>
-
-                                        <!-- Delete (hanya ketua_tim & admin) -->
-                                        @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin']))
-                                        <button onclick="deleteFile({{ $file->file_id }})"
-                                                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                title="Hapus">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                                                <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
-                                            </svg>
+                    <!-- Tabel Publikasi -->
+                    @if($publication->publicationPlans->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-xs">
+                                <tr>
+                                    <th class="px-3 py-2 border">No</th>
+                                    <th class="px-3 py-2 border">Nama Output</th>
+                                    <th class="px-3 py-2 border" colspan="4">Rencana</th>
+                                    <th class="px-3 py-2 border" colspan="4">Realisasi</th>
+                                    <th class="px-3 py-2 border">Aksi</th>
+                                </tr>
+                                <tr class="bg-gray-50 text-xs">
+                                    <th></th>
+                                    <th></th>
+                                    <th class="px-3 py-2 border">Q1</th>
+                                    <th class="px-3 py-2 border">Q2</th>
+                                    <th class="px-3 py-2 border">Q3</th>
+                                    <th class="px-3 py-2 border">Q4</th>
+                                    <th class="px-3 py-2 border">Q1</th>
+                                    <th class="px-3 py-2 border">Q2</th>
+                                    <th class="px-3 py-2 border">Q3</th>
+                                    <th class="px-3 py-2 border">Q4</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($publication->publicationPlans as $index => $pubPlan)
+                                <tr>
+                                    <td class="px-4 py-4 text-center">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-4 font-semibold">{{ $pubPlan->plan_name }}</td>
+                                    
+                                    <!-- Rencana Q1-Q4 -->
+                                    @php
+                                        $planQ = getQuarter($pubPlan->plan_date);
+                                    @endphp
+                                    @for($q = 1; $q <= 4; $q++)
+                                        <td class="px-4 py-4 text-center">
+                                            @if($planQ && $q >= $planQ)
+                                                <span class="px-2 py-1 bg-blue-900 text-white rounded-full text-xs">
+                                                    📄 Rencana
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+                                    @endfor
+                                    
+                                    <!-- Realisasi Q1-Q4 -->
+                                    @php
+                                        $finalQ = $pubPlan->publicationFinal ? getQuarter($pubPlan->publicationFinal->actual_date) : null;
+                                    @endphp
+                                    @for($q = 1; $q <= 4; $q++)
+                                        <td class="px-4 py-4 text-center">
+                                            @if($finalQ && $q >= $finalQ)
+                                                <span class="px-2 py-1 bg-emerald-600 text-white rounded-full text-xs">
+                                                    ✅ Selesai
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+                                    @endfor
+                                    
+                                    <!-- Aksi -->
+                                    <td class="px-4 py-4 text-center">
+                                        <button x-data @click="$dispatch('open-modal', 'edit-pub-{{ $pubPlan->pub_plan_id }}')"
+                                                class="text-blue-600 hover:text-blue-800 mr-2">
+                                            ✏️
                                         </button>
+                                        @if(auth()->check() && in_array(auth()->user()->role, ['ketua_tim', 'admin']))
+                                        <form action="{{ route('publication-plans.destroy', $pubPlan->pub_plan_id) }}" 
+                                            method="POST" class="inline"
+                                            onsubmit="return confirm('Hapus publikasi ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800">🗑️</button>
+                                        </form>
                                         @endif
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                     @else
                     <div class="text-center py-8 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mx-auto mb-3 opacity-50">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
-                        </svg>
-                        <p class="text-sm">Belum ada file publikasi yang diupload</p>
+                        <p class="text-sm">Belum ada rencana publikasi</p>
                     </div>
                     @endif
                 </div>
+
+                <!-- Modal Tambah Publikasi -->
+                <div x-data="{ show: false }" 
+                    @open-modal.window="show = ($event.detail === 'add-publication-plan')"
+                    @close-modal.window="show = false"
+                    x-show="show"
+                    x-transition
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 relative" @click.away="show = false">
+                        <button @click="show = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600">✖</button>
+                        
+                        <h2 class="text-lg font-semibold mb-4">Tambah Rencana Publikasi</h2>
+                        
+                        <form method="POST" action="{{ route('publication-plans.store', $publication->slug_publication) }}" enctype="multipart/form-data">
+                            @csrf
+                            
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Nama Output Publikasi</label>
+                                <input type="text" name="plan_name" required
+                                    class="w-full border rounded-lg px-3 py-2 mt-1"
+                                    placeholder="Contoh: Laporan Bulanan Januari 2025">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Rencana Terbit</label>
+                                <input type="date" name="plan_date"
+                                    class="w-full border rounded-lg px-3 py-2 mt-1">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">Deskripsi Rencana</label>
+                                <textarea name="plan_desc" rows="3"
+                                    class="w-full border rounded-lg px-3 py-2 mt-1"
+                                    placeholder="Deskripsi rencana publikasi..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700">File Rencana (Draft)</label>
+                                <input type="file" name="plan_file" accept=".pdf,.xlsx,.xls,.docx,.doc"
+                                    class="w-full border rounded-lg px-3 py-2 mt-1 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-600 file:text-white">
+                            </div>
+                            
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button type="button" @click="show = false"
+                                    class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                                    Batal
+                                </button>
+                                <button type="submit"
+                                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                    Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal Edit (Generate per item) -->
+                @foreach($publication->publicationPlans as $pubPlan)
+                <div x-data="{ show: false, tab: 'rencana' }" 
+                    @open-modal.window="show = ($event.detail === 'edit-pub-{{ $pubPlan->pub_plan_id }}')"
+                    @close-modal.window="show = false"
+                    x-show="show"
+                    x-transition
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+                        <button @click="show = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600">✖</button>
+                        
+                        <h2 class="text-lg font-semibold mb-4">Edit: {{ $pubPlan->plan_name }}</h2>
+                        
+                        <!-- Tab -->
+                        <div class="flex space-x-2 mb-4">
+                            <button @click="tab = 'rencana'"
+                                    :class="tab === 'rencana' ? 'bg-blue-800 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded text-xs">
+                                Edit Rencana
+                            </button>
+                            <button @click="tab = 'realisasi'"
+                                    :class="tab === 'realisasi' ? 'bg-blue-800 text-white' : 'bg-gray-200'"
+                                    class="px-4 py-2 rounded text-xs">
+                                Edit Realisasi
+                            </button>
+                        </div>
+                        
+                        <!-- Form Rencana -->
+                        <div x-show="tab === 'rencana'">
+                            <form method="POST" action="{{ route('publication-plans.update-plan', $pubPlan->pub_plan_id) }}" enctype="multipart/form-data">
+                                @csrf
+                                @method('PUT')
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">Nama Output</label>
+                                    <input type="text" name="plan_name" value="{{ $pubPlan->plan_name }}" required
+                                        class="w-full border rounded-lg px-3 py-2">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">Tanggal Rencana</label>
+                                    <input type="date" name="plan_date" value="{{ optional($pubPlan->plan_date)->format('Y-m-d') }}"
+                                        class="w-full border rounded-lg px-3 py-2">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                                    <textarea name="plan_desc" rows="3" class="w-full border rounded-lg px-3 py-2">{{ $pubPlan->plan_desc }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">File</label>
+                                    <input type="file" name="plan_file" accept=".pdf,.xlsx,.xls,.docx,.doc"
+                                        class="w-full border rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-600 file:text-white">
+                                    @if($pubPlan->plan_file)
+                                        <p class="text-xs text-gray-500 mt-1">File lama: 
+                                            <a href="{{ asset('storage/'.$pubPlan->plan_file) }}" target="_blank" class="text-blue-600">📄 Lihat</a>
+                                        </p>
+                                    @endif
+                                </div>
+                                
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" @click="show = false" class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Form Realisasi -->
+                        <div x-show="tab === 'realisasi'">
+                            <form method="POST" action="{{ route('publication-plans.update-final', $pubPlan->pub_plan_id) }}" enctype="multipart/form-data">
+                                @csrf
+                                @method('PUT')
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">Tanggal Realisasi Terbit</label>
+                                    <input type="date" name="actual_date" 
+                                        value="{{ optional($pubPlan->publicationFinal)->actual_date ? $pubPlan->publicationFinal->actual_date->format('Y-m-d') : '' }}" 
+                                        required
+                                        class="w-full border rounded-lg px-3 py-2">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">Deskripsi Realisasi</label>
+                                    <textarea name="final_desc" rows="3" class="w-full border rounded-lg px-3 py-2">{{ optional($pubPlan->publicationFinal)->final_desc }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-sm font-medium text-gray-700">File Publikasi Final</label>
+                                    <input type="file" name="final_file" accept=".pdf,.xlsx,.xls,.docx,.doc"
+                                        class="w-full border rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-600 file:text-white">
+                                    @if($pubPlan->publicationFinal && $pubPlan->publicationFinal->final_file)
+                                        <p class="text-xs text-gray-500 mt-1">File lama: 
+                                            <a href="{{ asset('storage/'.$pubPlan->publicationFinal->final_file) }}" target="_blank" class="text-blue-600">📄 Lihat</a>
+                                        </p>
+                                    @endif
+                                </div>
+                                
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" @click="show = false" class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+                                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
 
                 <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-4 items-center pt-12">
                     <!-- Search -->

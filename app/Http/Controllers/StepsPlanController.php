@@ -56,7 +56,15 @@ class StepsPlanController extends Controller
             }
         $publication->progressKumulatif = $progressKumulatif;
         
-        return view('tampilan.detail', compact('stepsplans', 'total_rencana', 'total_realisasi', 'publication', 'search', 'publication'));
+        $publication->load(['publicationPlans.publicationFinal']);
+    
+        return view('tampilan.detail', compact(
+            'stepsplans', 
+            'total_rencana', 
+            'total_realisasi', 
+            'publication', 
+            'search'
+        ));
     }
     
     // Simpan data untuk formulir Tambah Tahapan
